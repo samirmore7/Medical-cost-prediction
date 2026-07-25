@@ -5,7 +5,7 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
-# Search explicitly for Model.pkl, fallback to Model (2).pkl if needed
+# Model loading logic (looks for Model.pkl, falls back to Model (2).pkl)
 MODEL_NAME = 'Model.pkl' if os.path.exists('Model.pkl') else 'Model (2).pkl'
 MODEL_PATH = os.path.join(os.path.dirname(__file__), MODEL_NAME)
 
@@ -34,11 +34,7 @@ HTML_TEMPLATE = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* -------------------------------------------------------------------------- */
-        /* MULTI-THEME COLOR SYSTEM                                                   */
-        /* -------------------------------------------------------------------------- */
-        
-        /* Theme 1: Netflix Dark */
+        /* Multi-Theme System */
         :root[data-theme="netflix"] {
             --bg-base: #141414;
             --bg-card: rgba(24, 24, 24, 0.85);
@@ -52,7 +48,6 @@ HTML_TEMPLATE = """
             --badge-bg: rgba(229, 9, 20, 0.15);
         }
 
-        /* Theme 2: Cyberpunk Neon */
         :root[data-theme="cyberpunk"] {
             --bg-base: #050814;
             --bg-card: rgba(13, 22, 40, 0.85);
@@ -66,7 +61,6 @@ HTML_TEMPLATE = """
             --badge-bg: rgba(0, 240, 255, 0.12);
         }
 
-        /* Theme 3: Modern Glassmorphism */
         :root[data-theme="glass"] {
             --bg-base: #0f172a;
             --bg-card: rgba(30, 41, 59, 0.7);
@@ -80,7 +74,6 @@ HTML_TEMPLATE = """
             --badge-bg: rgba(99, 102, 241, 0.15);
         }
 
-        /* Theme 4: Obsidian Gold */
         :root[data-theme="gold"] {
             --bg-base: #0A0A0B;
             --bg-card: rgba(20, 20, 22, 0.9);
@@ -94,9 +87,6 @@ HTML_TEMPLATE = """
             --badge-bg: rgba(212, 175, 55, 0.12);
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* GLOBAL RESET & BASE STYLES                                                 */
-        /* -------------------------------------------------------------------------- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -117,9 +107,6 @@ HTML_TEMPLATE = """
                 radial-gradient(circle at 85% 85%, rgba(0, 0, 0, 0.8) 0%, transparent 40%);
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* NAVBAR & THEME CONTROLS                                                    */
-        /* -------------------------------------------------------------------------- */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -178,9 +165,6 @@ HTML_TEMPLATE = """
             box-shadow: 0 0 12px var(--accent-glow);
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* MAIN DASHBOARD LAYOUT                                                      */
-        /* -------------------------------------------------------------------------- */
         .dashboard-container {
             max-width: 1400px;
             margin: 40px auto;
@@ -192,9 +176,7 @@ HTML_TEMPLATE = """
         }
 
         @media (max-width: 1024px) {
-            .dashboard-container {
-                grid-template-columns: 1fr;
-            }
+            .dashboard-container { grid-template-columns: 1fr; }
         }
 
         .panel {
@@ -224,13 +206,8 @@ HTML_TEMPLATE = """
             gap: 10px;
         }
 
-        .panel-title i {
-            color: var(--accent);
-        }
+        .panel-title i { color: var(--accent); }
 
-        /* -------------------------------------------------------------------------- */
-        /* FORM INPUT STYLES                                                          */
-        /* -------------------------------------------------------------------------- */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -272,9 +249,6 @@ HTML_TEMPLATE = """
             color: var(--text-primary);
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* BUTTON ANIMATIONS                                                          */
-        /* -------------------------------------------------------------------------- */
         .btn-predict {
             grid-column: span 2;
             margin-top: 15px;
@@ -304,11 +278,8 @@ HTML_TEMPLATE = """
             box-shadow: 0 12px 30px var(--accent-glow);
         }
 
-        .btn-predict:active {
-            transform: translateY(1px);
-        }
+        .btn-predict:active { transform: translateY(1px); }
 
-        /* Ripple effect */
         .ripple {
             position: absolute;
             background: rgba(255, 255, 255, 0.4);
@@ -322,9 +293,6 @@ HTML_TEMPLATE = """
             to { transform: scale(4); opacity: 0; }
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* RESULTS & RECOMMENDATION CARDS                                             */
-        /* -------------------------------------------------------------------------- */
         .metric-card {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border-color);
@@ -407,9 +375,6 @@ HTML_TEMPLATE = """
             line-height: 1.4;
         }
 
-        /* -------------------------------------------------------------------------- */
-        /* ANIMATIONS                                                                 */
-        /* -------------------------------------------------------------------------- */
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -418,7 +383,6 @@ HTML_TEMPLATE = """
 </head>
 <body>
 
-    <!-- Navigation Header -->
     <nav class="navbar">
         <div class="brand">
             <i class="fa-solid fa-layer-group"></i> InsurAI Studio
@@ -440,10 +404,8 @@ HTML_TEMPLATE = """
         </div>
     </nav>
 
-    <!-- Main Dashboard -->
     <div class="dashboard-container">
         
-        <!-- Input Parameters Panel -->
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
@@ -504,7 +466,6 @@ HTML_TEMPLATE = """
             </form>
         </div>
 
-        <!-- Output Analytics Dashboard Panel -->
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
@@ -539,16 +500,13 @@ HTML_TEMPLATE = """
 
     </div>
 
-    <!-- Interactive JavaScript Engine -->
     <script>
-        // Theme Switching Logic
         function switchTheme(themeName, element) {
             document.documentElement.setAttribute('data-theme', themeName);
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
         }
 
-        // Ripple Effect Animation on Buttons
         document.querySelector('.btn-predict').addEventListener('click', function (e) {
             let x = e.clientX - e.target.offsetLeft;
             let y = e.clientY - e.target.offsetTop;
@@ -562,7 +520,6 @@ HTML_TEMPLATE = """
             setTimeout(() => { ripples.remove(); }, 600);
         });
 
-        // Form Submit Handler
         async function handleFormSubmit(event) {
             event.preventDefault();
             
@@ -588,14 +545,11 @@ HTML_TEMPLATE = """
                 const res = await response.json();
 
                 if (res.status === 'success') {
-                    // Update metric cost
                     document.getElementById('premiumDisplay').innerText = '$' + res.prediction.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     
-                    // Update risk badge
                     const badge = document.getElementById('riskBadge');
                     badge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${res.risk_category} Risk Rating`;
 
-                    // Populate recommendations
                     const recContainer = document.getElementById('recommendationContainer');
                     recContainer.innerHTML = '';
 
@@ -636,7 +590,6 @@ def predict():
     try:
         data = request.get_json()
 
-        # Parse and encode non-numeric parameters explicitly
         age = float(data.get('age', 0))
         sex = SEX_MAP.get(str(data.get('sex')).lower(), 0)
         bmi = float(data.get('bmi', 0.0))
@@ -644,11 +597,9 @@ def predict():
         smoker = SMOKER_MAP.get(str(data.get('smoker')).lower(), 0)
         region = REGION_MAP.get(str(data.get('region')).lower(), 0)
 
-        # Structure query according to exact model signature: ['age', 'sex', 'bmi', 'children', 'smoker', 'region']
         features = np.array([[age, sex, bmi, children, smoker, region]])
         prediction = float(model.predict(features)[0])
 
-        # Dynamic Insurance Recommendations Strategy
         recommendations = []
         if smoker == 1:
             risk_category = "High"
@@ -696,4 +647,5 @@ def predict():
         return jsonify({'status': 'error', 'message': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
